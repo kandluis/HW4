@@ -50,16 +50,16 @@ class ValueIterationAgent(ValueEstimationAgent):
         def expectedValue(s, a, U):
             expectedReward = 0
             for (nextState, prob) in mdp.getTransitionStatesAndProbs(s, a):
-                expectedReward += prob * (mpd.getReward(s, a, nextState) + self.discount * U[nextState])
+                expectedReward += prob * (self.mdp.getReward(s, a, nextState) + self.discount * U[nextState])
             return expectedReward
 
         # Write value iteration code here
         for t in xrange(self.iterations):
             # Using batched value iteration.
             oldValues = self.values.copy()
-            for state in mdp.getStates():
-                expectedRewards = [expectedValue(state, action, oldValues) for action in mdp.getPossibleActions(state)]
-                if expectedReward != []:
+            for state in self.mdp.getStates():
+                expectedRewards = [expectedValue(state, action, oldValues) for action in self.mdp.getPossibleActions(state)]
+                if expectedRewards != []:
                     self.values[state] = max(expectedRewards)
 
     def getValue(self, state):
@@ -75,9 +75,9 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         qVal = 0
-        for (nextState, prob) in mdp.getTransitionStatesAndProbs(state, action):
-          qVal += prob*(mdp.getReward(state, action, nextState) + self.discount * self.values[nextState])
-        
+        for (nextState, prob) in self.mdp.getTransitionStatesAndProbs(state, action):
+          qVal += prob*(self.mdp.getReward(state, action, nextState) + self.discount * self.values[nextState])
+
         return qVal
 
     def computeActionFromValues(self, state):
