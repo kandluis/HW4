@@ -55,10 +55,12 @@ class ValueIterationAgent(ValueEstimationAgent):
 
         # Write value iteration code here
         for t in xrange(self.iterations):
-            # Using batched Value Iteration.
+            # Using batched value iteration.
             oldValues = self.values.copy()
             for state in mdp.getStates():
-                self.values[state] = max([expectedValue(state, action, oldValues) for action in mdp.getPossibleActions(state)])
+                expectedRewards = [expectedValue(state, action, oldValues) for action in mdp.getPossibleActions(state)]
+                if expectedReward != []:
+                    self.values[state] = max(expectedRewards)
 
     def getValue(self, state):
         """
@@ -85,10 +87,11 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         optimalAction = None
         maxReward = -float("inf")
-        for action in self.values:
-            if self.values[action] > maxReward:
+        for action in self.mdp.getPossibleActions(state):
+            reward = self.computeQValueFromValues(state, action)
+            if reward > maxReward:
+                maxReward = reward
                 optimalAction = action
-                maxReward = self.values[action]
 
         return optimalAction
 
