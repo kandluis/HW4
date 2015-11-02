@@ -1,10 +1,14 @@
 # valueIterationAgents.py
+# Student Collaborators:
+# Kevin Eskici (keskici@college.harvard.edu)
+# Luis Perez (luisperez@college.harvard.edu)
+#
 # -----------------------
 # Licensing Information:  You are free to use or extend these projects for
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -43,9 +47,18 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.iterations = iterations
         self.values = util.Counter() # A Counter is a dict with default 0
 
-        # Write value iteration code here
-        "*** YOUR CODE HERE ***"
+        def expectedValue(s, a, U):
+            expectedReward = 0
+            for (nextState, prob) in mdp.getTransitionStatesAndProbs(s, a):
+                expectedReward += prob * (mpd.getReward(s, a, nextState) + self.discount * U[nextState])
+            return expectedReward
 
+        # Write value iteration code here
+        for t in xrange(self.iterations):
+            # Using batched Value Iteration.
+            oldValues = self.values.copy()
+            for state in mdp.getStates():
+                self.values[state] = max([expectedValue(state, action, oldValues) for action in mdp.getPossibleActions(state)])
 
     def getValue(self, state):
         """
@@ -59,8 +72,7 @@ class ValueIterationAgent(ValueEstimationAgent):
           Compute the Q-value of action in state from the
           value function stored in self.values.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.values[action]
 
     def computeActionFromValues(self, state):
         """
@@ -71,8 +83,14 @@ class ValueIterationAgent(ValueEstimationAgent):
           there are no legal actions, which is the case at the
           terminal state, you should return None.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        optimalAction = None
+        maxReward = -float("inf")
+        for action in self.values:
+            if self.values[action] > maxReward:
+                optimalAction = action
+                maxReward = self.values[action]
+
+        return optimalAction
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
