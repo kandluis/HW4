@@ -50,7 +50,9 @@ class ValueIterationAgent(ValueEstimationAgent):
         def expectedValue(s, a, U):
             expectedReward = 0
             for (nextState, prob) in mdp.getTransitionStatesAndProbs(s, a):
-                expectedReward += prob * (self.mdp.getReward(s, a, nextState) + self.discount * U[nextState])
+                currentReward = self.mdp.getReward(s, a, nextState)
+                futureValue = self.discount * U[nextState]
+                expectedReward += prob * (currentReward + futureValue)
             return expectedReward
 
         # Write value iteration code here
