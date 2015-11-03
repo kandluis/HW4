@@ -25,6 +25,10 @@ def question2():
     return answerDiscount, answerNoise
 
 def question3a():
+    '''
+    Living reward is negative to avoid taking extra steps.
+    '''
+
     answerDiscount = 1.0
     answerNoise = 0.1
     answerLivingReward = -4
@@ -32,6 +36,10 @@ def question3a():
     # If not possible, return 'NOT POSSIBLE'
 
 def question3b():
+    '''
+    Higher discount to prefer negative rewards in the future as opposed to now.
+    Increased noise to avoid cliffs.
+    '''
     answerDiscount = 0.5
     answerNoise = 0.4
     answerLivingReward = -3
@@ -39,6 +47,10 @@ def question3b():
     # If not possible, return 'NOT POSSIBLE'
 
 def question3c():
+    '''
+    0 noise to risk cliff, and the living reward is negative but small enough
+    where the longer reward is worth it.
+    '''
     answerDiscount = 1.0
     answerNoise = 0.0
     answerLivingReward = -1
@@ -46,6 +58,9 @@ def question3c():
     # If not possible, return 'NOT POSSIBLE'
 
 def question3d():
+    '''
+    Small positive living reward, with some noise.
+    '''
     answerDiscount = 0.9
     answerNoise = 0.3
     answerLivingReward = 0.1
@@ -53,6 +68,9 @@ def question3d():
     # If not possible, return 'NOT POSSIBLE'
 
 def question3e():
+    '''
+    No noise, no discount, positive reward for living.
+    '''
     answerDiscount = 1.0
     answerNoise = 0.0
     answerLivingReward = 1.0

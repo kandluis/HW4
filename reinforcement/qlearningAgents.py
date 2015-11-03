@@ -111,8 +111,8 @@ class QLearningAgent(ReinforcementAgent):
           NOTE: You should never call this function,
           it will be called on your behalf
         """
-        futureValue = self.discount * self.computeValueFromQValues(nextState)
-        currentValue = self.qvalues[state, action]
+        futureValue = self.discount * self.getValue(nextState)
+        currentValue = self.getQValue(state, action)
         predictedReward =  futureValue - currentValue
         self.qvalues[state, action] += self.alpha * (reward + predictedReward)
 
