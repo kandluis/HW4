@@ -1,0 +1,189 @@
+\documentclass[11pt]{article}
+\usepackage{latexsym}
+\usepackage{fancyhdr}
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage[pdftex]{graphicx}
+\usepackage[margin=1in]{geometry}
+
+
+% Create answer counter to keep track of seperate responses
+\newcounter{AnswerCounter}
+\newcounter{SubAnswerCounter}
+\setcounter{AnswerCounter}{1}
+\setcounter{SubAnswerCounter}{1}
+
+% Create answer environment which uses counter
+\newenvironment{answer}[0]{
+  \setcounter{SubAnswerCounter}{1}
+  \bigskip
+  \textbf{Solution \arabic{AnswerCounter}}
+  \\
+  \begin{small}
+}{
+  \end{small}
+  \stepcounter{AnswerCounter}
+}
+
+\newenvironment{subanswer}[0]{
+  (\alph{SubAnswerCounter})
+}{
+ \bigskip
+  \stepcounter{SubAnswerCounter}
+}
+
+% Custom Header information on each page
+\pagestyle{fancy}
+\lhead{HUID: 70871564}
+\rhead{CS182: Luis APerez}
+\renewcommand{\headrulewidth}{0.1pt}
+\renewcommand{\footrulewidth}{0.1pt}
+
+% Title page is page 0
+\setcounter{page}{0}
+
+\begin{document}
+\begin{answer}
+We can formally model the problem as a MDP as follows:
+\begin{enumerate}
+\item The state spaces $\mathcal{S}$ is given by $\{\text{COOL}, \text{WARM}\, \text{OFF}\}$.
+\item The actions consists of the set $\mathcal{A} = \{ \text{fast}, \text{slow}\}$.
+\item The transition functions is given by Table \ref{table:transition_model}, where we specify $p(s' \mid s, a)$ by listing the tuples $(s,a)$ along the columns and the $s'$ in along the rows.
+\begin{table}[h!]
+\centering
+\caption{Transition Model for Mars Rover}
+\label{table:transition_model}
+\begin{tabular}{|l|l|l|l|l|l|l|}
+\hline
+     & (COOL, fast) & (COOL, slow) & (WARM, fast) & (WARM, slow) & (OFF, slow) & (OFF, fast) \\ \hline
+COOL & 1/4          & 1            & 0            & 1/4          & 0           & 0           \\ \hline
+WARM & 3/4          & 0            & 7/8          & 3/4          & 0           & 0           \\ \hline
+OFF  & 0            & 0            & 1/8          & 0            & 1           & 1           \\ \hline
+\end{tabular}
+\end{table}
+\item Finally, we specify the reward function $R: \mathcal{S} \times \mathcal{A} \times \mathcal{S} \to \mathbb{R}$ as follows:
+\[
+R(s, a, s') =
+\begin{cases}
+  0 & s = \text{OFF} \\
+  10 & a = \text{fast} \\
+  4 & a = \text{slow}
+\end{cases}
+\]
+In the above, we've made the assumption that the state we end up in does not affect the rover. For example, it might be possible argue that if the rover ends in the $\text{OFF}$ state, then it should receive no reward. However, the reward is based on the distance traveled, and here, we make the assumption that if the rover decides to act FAST and ends in the OFF state, it will have still traveled most of the distance it would normally.
+\end{enumerate}
+\end{answer}
+
+\begin{answer}
+We now write down the $U$ function for policy $\pi_1$ (drive fast) and $\pi_2$ (drive slow). We start with $\pi_1$. We can start by calculating $U^{\pi_1}[\text{OFF}]$, which is immediately $0$ since we're given no reward and we stay in the same state:
+$$
+U^{\pi_1}[\text{OFF}] = 0
+$$
+Using the above, we can calculate $U^{\pi_1}[\text{WARM}]$ as follows:
+\begin{align*}
+U^{\pi_1}[\text{WARM}] &= \frac{7}{8}(10 + \gamma U^{\pi_1}[\text{WARM}]) + \frac{1}{8}(10 + \gamma U^{\pi_1}[\text{OFF}]) \\
+&= 10 + \frac{7\gamma}{8}\left(U^{\pi_1}[\text{WARM}]\right) \\
+\implies U^{\pi_1}[\text{WARM}] &= \frac{80}{8 - 7\gamma}
+\end{align*}
+With the above calculated, we can continue to calculate $U^{\pi_1}[\text{COOL}]$ as follows:
+\begin{align*}
+U^{\pi_1}[\text{COOL}] &= \frac{1}{4}(10 + \gamma U^{\pi_1}[\text{COOL}]) + \frac{3}{4}(10 + \gamma U^{\pi_1}[\text{WARM}]) \\
+&= 10 + \frac{\gamma}{4}\left(U^{\pi_1}[\text{COOL}] \right) + \frac{3}{4}\left(\frac{80\gamma}{8 - 7\gamma}\right) \\
+\implies U^{\pi_1}[\text{COOL}] &= \frac{40 + \frac{240\gamma}{8 - 7\gamma}}{4 - \gamma} \\
+&= \frac{320 - 40\gamma}{(4 - \gamma)(8-7\gamma)}
+\end{align*}
+Now we write the $U$ function for policy $\pi_2$. As before, we first calculate $U^{\pi_2}[\text{OFF}]$:
+$$
+U^{\pi_2}[\text{OFF}] = 0
+$$
+Next, we can calculate $U^{\pi_2}[\text{COOL}]$:
+\begin{align*}
+U^{\pi_2}[\text{COOL}] &= 4 + \gamma U^{\pi_2}[\text{COOL}] \\
+\implies U^{\pi_2}[\text{COOL}] &= \frac{4}{1 - \gamma}
+\end{align*}
+With the above solved, we can now take a look at $U^{\pi_2}[\text{WARM}]$:
+\begin{align*}
+U^{\pi_2}[\text{WARM}] &= \frac{3}{4}(4 + \gamma U^{\pi_2}[\text{WARM}]) + \frac{1}{4}(4 + \gamma U^{\pi_2}[\text{COOL}]) \\
+&= 4 + \frac{3\gamma}{4} U^{\pi_2}[\text{WARM}] + \frac{\gamma}{4}(\frac{4}{1 - \gamma}) \\
+\implies  U^{\pi_2}[\text{WARM}] &= \frac{16 + \frac{4\gamma}{1 - \gamma}}{4 - 3\gamma}\\
+&= \frac{16 - 12\gamma }{(4 - 3\gamma)(1 - \gamma)}
+\end{align*}
+The above completes finding the $U$-values for the two given policies.
+\end{answer}
+
+\begin{answer}
+We now run policy iteration with the initial policy as $\pi_1$ (ie, always fast!), we arrive at a the policy given by:
+\begin{align*}
+\pi[\text{COOL}] = \text{FAST} \\
+\pi[\text{WARM}] = \text{SLOW} \\
+\pi[\text{OFF}] = *
+\end{align*}
+where we use the symbol $*$ to represent any arbitrary action.
+
+To explain the results, we can reference Table \ref{table:policy_iteration}. On the initial iteration, our policy is to always go fast. We can evaluate this policy to the corresponding $U$ values using part (2) above by plugging in $\gamma = 0.9$:
+\begin{align*}
+U^{\pi(1)}[\text{OFF}] &= 0 \\
+U^{\pi(1)}[\text{WARM}] &= \frac{80}{8-7(0.9)} \approx 47.059\\
+U^{\pi(1)}[\text{COOL}] &= \frac{320 - 40(0.9)}{(8-7(0.9))(4 - 0.9)} \approx 53.89
+\end{align*}
+From here, we have some values. Next, we run the first iteration to optimize the policy. We consider, in turn, the expected value of each action we take.
+\begin{align*}
+\text{COOL} &: \frac{1}{4}(53.89) + \frac{3}{4}(47.059) \approx 48.77 \tag{fast} \\
+&: 53.89 \tag{slow} \\
+\text{WARM} &: \frac{7}{8}(47.059) \approx 41.18 \tag{fast} \\
+&: \frac{1}{4}(53.89) + \frac{3}{4}(47.059) \approx \approx 48.77 \tag{slow} \\
+\text{OFF} &: *
+\end{align*}
+From the above, it is clear that our new policy for the states $\{$OFF, COOL, WARM$\}$ is $\{$*, SLOW, SLOW$\}$. Luckily, this is also a policy we calculated in part $2$, so we can just plug in $\gamma = 0.9$ to obtain the results:
+\begin{align*}
+U^{\pi(2)}[\text{OFF}] &= 0 \\
+U^{\pi(2)}[\text{WARM}] &= \frac{16 - 12(0.9)}{(1-.9)(4-3(0.9))} 40 \\
+U^{\pi(2)}[\text{COOL}] &= \frac{4}{1-0.9} = 40
+\end{align*}
+Now we continue to the second iteration of policy iteration.
+
+\begin{align*}
+\text{COOL} &: \frac{1}{4}(40) + \frac{3}{4}(40) = 40 \tag{fast} \\
+&: 40 \tag{slow} \\
+\text{WARM} &: \frac{7}{8}(40) \approx 35 \tag{fast} \\
+&: 40 \tag{slow} \\
+\text{OFF} &: *
+\end{align*}
+
+The above, to avoid cycles, leads us to the policy for \{OFF, COOL, WARM\} given by \{*, FAST, SLOW\}. This is a new policy, but we can nonetheless solve the system of equations to obtain:
+\begin{align*}
+U^{\pi(3)}[\text{OFF}] &= 0 \\
+U^{\pi(3)}[\text{WARM}] &= \frac{1}{4}(4 + \gamma U^{\pi(3)}[\text{COOL}]) + \frac{3}{4}(4 + \gamma U^{\pi(3)}[\text{WARM}]) \\
+U^{\pi(3)}[\text{COOL}] &= \frac{1}{4}(10 + \gamma U^{\pi(3)}[\text{COOL}] + \frac{3}{4}(10 + \gamma U^{\pi(3)}[\text{WARM}]))
+\end{align*}
+The above system can be solved with some simple algebra, and we arrive at, letting $X = U^{\pi(3)}[\text{WARM}]$ and $Y = U^{\pi(3)}[\text{COOL}]$.
+\begin{align*}
+X &= 4 + \frac{\gamma}{4}Y + \frac{3\gamma}{4}X \\
+Y &= 10 + \frac{\gamma}{4}Y + \frac{3\gamma}{4}X
+\end{align*}
+Subtracting, we have $Y - X = 6 \implies Y = 6 + X$. Plugging this into the first equation, we have:
+\begin{align*}
+X &= 4 + \frac{\gamma}{4}(6 + X) + \frac{3\gamma}{4}X \\
+\implies X &= \frac{16 + 6\gamma}{1 - \gamma}
+\implies Y = 6 + \frac{16 + 6\gamma}{1 - \gamma}
+\end{align*}
+Plugging in $\gamma = 0.9$:
+\begin{align*}
+ U^{\pi(3)}[\text{WARM}] &= 214 \\
+ U^{\pi(3)}[\text{COOL}] &= 220
+\end{align*}
+
+For reference, please see Table \ref{table:policy_iteration}.
+\begin{table}[h!]
+\centering
+\caption{Policy Iteration}
+\label{table:policy_iteration}
+\begin{tabular}{|l|l|l|l|l|l|l|}
+\hline
+  & U{[}OFF{]} & U{[}WARM{]} & U{[}COOL{]} & $\pi${[}OFF{]} & $\pi${[}WARM{]} & $\pi${[}COOL{]} \\ \hline
+1 & 0          & 47.06       & 53.89       & FAST         & FAST          & FAST          \\ \hline
+2 & 0          & 40          & 40        & *            & SLOW          & SLOW          \\ \hline
+3 & 0          & 214         & 220         & *            & SLOW          & FAST          \\ \hline
+\end{tabular}
+\end{table}
+\end{answer}
+\end{document}
